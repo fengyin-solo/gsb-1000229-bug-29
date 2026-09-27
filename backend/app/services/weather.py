@@ -18,6 +18,7 @@ class WeatherService:
         *,
         keyword: str | None = None,
         status: str | None = None,
+        filters: dict[str, str] | None = None,
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -26,6 +27,9 @@ class WeatherService:
             rows = [row for row in rows if keyword in str(row.get("站点编号", ""))]
         if status:
             rows = [row for row in rows if row.get("status") == status]
+        for field, value in (filters or {}).items():
+            if value:
+                rows = [row for row in rows if value in str(row.get(field, ""))]
         total = len(rows)
         start = max(page - 1, 0) * size
         return rows[start:start + size], total
@@ -56,6 +60,7 @@ class WeatherService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
+        # 回到「正常」才算处理完，值班看板的待处理量才与列表状态对得上
+        entry["pending"] = target != STATUS_ORDER[0]
         entry["abnormal"] = action in NEGATIVE_ACTIONS
         return entry, f"气象数据已{action}"

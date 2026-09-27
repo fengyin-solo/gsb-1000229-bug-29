@@ -99,10 +99,11 @@ async function runAction(action: string, row: Row) {
   try {
     const response = await request(`${ENDPOINT}/${row.id}/actions`, {
       method: 'POST',
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ values: { action } }),
     })
-    if (!response.ok) {
-      throw new Error('气象监测动作未生效，请稍后重试')
+    const result = (await response.json()) as { ok?: boolean; message?: string }
+    if (!response.ok || result.ok === false) {
+      throw new Error(result.message || '气象监测动作未生效，请稍后重试')
     }
     await reload()
   } catch (error) {
