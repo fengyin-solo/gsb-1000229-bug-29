@@ -10,9 +10,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import ROUTERS
+from app.sharing import seed_weather_shares
 from app.store import store
 
 app = FastAPI(title="光伏电站运维管理平台", version="1.0.0")
+
+# 初始化气象数据共享目录：列表/详情/值班看板共用的授权与可见口径
+seed_weather_shares()
 
 app.add_middleware(
     CORSMiddleware,
